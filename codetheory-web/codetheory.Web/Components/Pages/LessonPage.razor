@@ -1,0 +1,127 @@
+﻿@page "/lesson/{LessonId:int}"
+@inject IHttpClientFactory ClientFactory
+@using System.Text.Json
+@using codetheory.Web.Models
+@using MudBlazor
+@rendermode InteractiveServer
+
+<h1 class="mt-3">@lesson?.Title</h1>
+
+<div class="container text-center text-muted fst-italic my-3" style="max-width: 1000px;">
+    @lesson?.Summary
+</div>
+
+@if (lesson?.Contents != null)
+{
+    <div class="container mb-5">
+        @foreach (var item in RenderItems)
+        {
+            if (item is LessonContentDTO content)
+            {
+                <LessonContentView Content="content" />
+            }
+            else if (item is List<CodeSnippet> snippets && snippets.Any())
+            {
+                <MudTabs Class="my-4 no-scroll-tabs"
+                         Elevation="1"
+                         Rounded="true"
+                         ScrollButtons="ScrollButtons.None"
+                         ShowScrollButtons="false"
+                         PanelClass="py-3">
+                    @foreach (var snippet in snippets)
+                    {
+                        <MudTabPanel Text="@snippet.Language">
+                            <pre class="bg-dark text-light p-3 rounded" style="overflow-x:auto; white-space: pre-wrap;">
+                <code>@(NormalizeCode(snippet.Code))</code>
+                            </pre>
+
+                            @if (!string.IsNullOrWhiteSpace(snippet.Output))
+                            {
+                                <div class="mt-3">
+                                    <strong>Output:</strong>
+                                    <pre class="bg-light p-2 border rounded">@snippet.Output</pre>
+                                </div>
+                            }
+                        </MudTabPanel>
+                    }
+                </MudTabs>
+            }
+        }
+    </div>
+}
+else
+{
+    <p>Loading lesson...</p>
+}
+
+@code {
+    [Parameter] public int LessonId { get; set; }
+    private LessonDTO? lesson;
+    private List<object> RenderItems = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var client = ClientFactory.CreateClient("Api");
+        lesson = await client.GetFromJsonAsync<LessonDTO>($"api/Lesson/{LessonId}");
+
+        if (lesson?.Contents != null)
+        {
+            var ordered = lesson.Contents.OrderBy(c => c.ContentOrder).ToList();
+            List<LessonContentDTO> buffer = new();
+
+            foreach (var content in ordered)
+            {
+                if (content.ContentTypeId == 4) 
+                {
+                    buffer.Add(content);
+                }
+                else
+                {
+                    if (buffer.Any())
+                    {
+                        RenderItems.Add(ToCodeSnippets(buffer));
+                        buffer.Clear();
+                    }
+
+                    RenderItems.Add(content);
+                }
+            }
+
+            if (buffer.Any())
+            {
+                RenderItems.Add(ToCodeSnippets(buffer));
+            }
+        }
+    }
+
+    private List<CodeSnippet> ToCodeSnippets(List<LessonContentDTO> contents)
+    {
+        var result = new List<CodeSnippet>();
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
+        foreach (var content in contents)
+        {
+            try
+            {
+                var single = JsonSerializer.Deserialize<CodeSnippet>(content.ContentData, options);
+                if (single != null)
+                {
+                    result.Add(single);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"JSON parse error: {ex.Message}");
+            }
+        }
+
+        return result;
+    }
+
+    private string NormalizeCode(string? raw)
+    {
+        return string.IsNullOrEmpty(raw)
+            ? ""
+            : raw.Replace("\\n", "\n").Replace("\r\n", "\n");
+    }
+}

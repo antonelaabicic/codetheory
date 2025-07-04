@@ -1,0 +1,107 @@
+﻿@using System.Text.Json
+@using codetheory.Web.Models
+
+@code {
+    [Parameter] public LessonContentDTO Content { get; set; } = default!;
+
+    private RenderFragment RenderContent() => Content.ContentTypeId switch
+    {
+        1 => RenderTextContent(),
+        2 => RenderImageContent(),
+        3 => RenderVideoContent(),
+        _ => builder => builder.AddContent(0, "Unknown content type.")
+    };
+
+    private RenderFragment RenderTextContent()
+    {
+        var doc = JsonDocument.Parse(Content.ContentData);
+
+        return builder =>
+        {
+            int seq = 0;
+
+            builder.AddMarkupContent(seq++, "<div class='container my-4'>");
+
+            if (doc.RootElement.TryGetProperty("title", out var title))
+            {
+                builder.AddMarkupContent(seq++, $"<h4 class='mb-3 mt-5'>{title.GetString()}</h4>");
+            }
+
+            if (doc.RootElement.TryGetProperty("text", out var text))
+            {
+                var htmlText = text.GetString()?.Replace("\\n", "<br />");
+                builder.AddMarkupContent(seq++, $"<p class='mb-4'>{htmlText}</p>");
+            }
+
+            if (doc.RootElement.TryGetProperty("question", out var q) &&
+                doc.RootElement.TryGetProperty("answer", out var a))
+            {
+                var question = q.GetString();
+                var answerRaw = a.GetString() ?? "";
+                var parts = answerRaw.Split(':', 2);
+                var prefix = parts[0].Trim();
+                var punchline = parts.Length > 1 ? parts[1].Replace("\\n", "<br />") : "";
+
+                builder.AddMarkupContent(seq++, $@"
+                    <div class='alert alert-info mt-4 mb-4'>
+                        <p><strong>Q:</strong> {question}</p>
+                        <p><strong>A:</strong> {prefix}:</p>
+                        <div class='text-center fw-bold'>{punchline}</div>
+                    </div>");
+            }
+
+            if (doc.RootElement.TryGetProperty("bullets", out var bullets))
+            {
+                builder.AddMarkupContent(seq++, "<ul class='mb-4'>");
+                foreach (var bullet in bullets.EnumerateArray())
+                {
+                    var heading = bullet.GetProperty("heading").GetString();
+                    var body = bullet.GetProperty("text").GetString();
+                    builder.AddMarkupContent(seq++, $"<li class='mb-3'><strong>{heading}:</strong> {body}</li>");
+                }
+                builder.AddMarkupContent(seq++, "</ul>");
+            }          
+
+            builder.AddMarkupContent(seq++, "</div>");
+        };
+    }
+
+    private RenderFragment RenderImageContent()
+    {
+        var doc = JsonDocument.Parse(Content.ContentData);
+        var imageUrl = doc.RootElement.GetProperty("image_path").GetString();
+        return builder =>
+        {
+            builder.AddMarkupContent(0, $@"
+                <div class='d-flex justify-content-center my-5'>
+                    <img src='{imageUrl}' class='img-fluid rounded shadow-sm' style='max-width:700px;' />
+                </div>");
+        };
+    }
+
+    private RenderFragment RenderVideoContent()
+    {
+        var doc = JsonDocument.Parse(Content.ContentData);
+        var url = doc.RootElement.GetProperty("url").GetString();
+
+        if (url is null) {
+            return builder => builder.AddContent(0, "[Invalid video URL]");
+        }
+        else if (url.EndsWith(".mp4"))
+        {
+            return builder => builder.AddMarkupContent(0, $@"
+                <div class='d-flex justify-content-center my-5'>
+                    <video width='700' height='400' class='rounded shadow-sm' controls>
+                        <source src='{url}' type='video/mp4'>
+                        Your browser does not support the video tag.
+                    </video>
+                </div>");
+        }
+        else
+        {
+            return builder => builder.AddContent(0, "[Unsupported video format]");
+        }
+    }
+}
+
+@RenderContent()
