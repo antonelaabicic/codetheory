@@ -3,6 +3,7 @@
 @using System.Text.Json
 @using codetheory.Web.Models
 @using MudBlazor
+@using Brism
 @rendermode InteractiveServer
 
 <h1 class="mt-3">@lesson?.Title</h1>
@@ -31,9 +32,8 @@
                     @foreach (var snippet in snippets)
                     {
                         <MudTabPanel Text="@snippet.Language">
-                            <pre class="bg-dark text-light p-3 rounded" style="overflow-x:auto; white-space: pre-wrap;">
-                <code>@(NormalizeCode(snippet.Code))</code>
-                            </pre>
+                            <CodeBlock Code="@snippet.Code"
+                            Language="@GetCodeLanguage(snippet.Language)"/>
 
                             @if (!string.IsNullOrWhiteSpace(snippet.Output))
                             {
@@ -43,6 +43,7 @@
                                 </div>
                             }
                         </MudTabPanel>
+
                     }
                 </MudTabs>
             }
@@ -118,10 +119,12 @@ else
         return result;
     }
 
-    private string NormalizeCode(string? raw)
+    private CodeLanguage GetCodeLanguage(string language) => language.ToLower() switch
     {
-        return string.IsNullOrEmpty(raw)
-            ? ""
-            : raw.Replace("\\n", "\n").Replace("\r\n", "\n");
-    }
+        "c++" => CodeLanguage.Cpp,
+        "c#" => CodeLanguage.CSharp,
+        "java" => CodeLanguage.Java,
+        "python" => CodeLanguage.Python,
+        _ => CodeLanguage.Markdown
+    };
 }

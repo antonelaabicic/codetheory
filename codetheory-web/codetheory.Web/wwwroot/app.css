@@ -61,16 +61,17 @@ h1:focus {
 }
 
 .mud-tab.mud-tab-active {
-    background-color: #e6ffe6 !important; /* light green */
-    border-bottom: 4px solid #198754 !important; /* bootstrap "success" green */
+    background-color: #e6ffe6 !important; 
+    border-bottom: 4px solid #198754 !important; 
 }
 
-    /* Ensure active style persists during hover */
-
-
-
-
-/* Smooth transitions for better UX */
 .mud-tab {
     transition: background-color 0.2s ease-in-out, border-bottom 0.2s ease-in-out;
+}
+
+.token.operator,
+.token.punctuation {
+    background-color: transparent !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
 }

@@ -1,9 +1,11 @@
+using Brism;
 using codetheory.Web.Components;
 using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddMudServices();
+builder.Services.AddBrism();
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 builder.Services.AddHttpClient("Api", client =>
