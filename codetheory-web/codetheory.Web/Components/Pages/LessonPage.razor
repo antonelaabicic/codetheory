@@ -15,11 +15,21 @@
 @if (lesson?.Contents != null)
 {
     <div class="container mb-5">
+        @{
+            int lessonContentCount = 0;
+        }
+
         @foreach (var item in RenderItems)
         {
             if (item is LessonContentDTO content)
             {
                 <LessonContentView Content="content" />
+                lessonContentCount++;
+
+                if (LessonId == 4 && lessonContentCount == 1)
+                {
+                    <SearchAnimation />
+                }
             }
             else if (item is List<CodeSnippet> snippets && snippets.Any())
             {
@@ -33,7 +43,7 @@
                     {
                         <MudTabPanel Text="@snippet.Language">
                             <CodeBlock Code="@snippet.Code"
-                            Language="@GetCodeLanguage(snippet.Language)"/>
+                                       Language="@GetCodeLanguage(snippet.Language)" />
 
                             @if (!string.IsNullOrWhiteSpace(snippet.Output))
                             {
@@ -43,7 +53,6 @@
                                 </div>
                             }
                         </MudTabPanel>
-
                     }
                 </MudTabs>
             }
@@ -72,7 +81,7 @@ else
 
             foreach (var content in ordered)
             {
-                if (content.ContentTypeId == 4) 
+                if (content.ContentTypeId == 4)
                 {
                     buffer.Add(content);
                 }
