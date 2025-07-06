@@ -1,0 +1,92 @@
+﻿@inject IJSRuntime JS
+@rendermode InteractiveServer
+
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<div class="my-5 border p-4 rounded d-flex flex-column align-items-center" style="background-color: #f9f9f9; margin: auto;">
+    <h4 class="text-center mb-3">Sort Animation</h4>
+
+    <div id="sortKonvaContainer" style="width:950px; height:250px;"></div>
+
+    <MudPaper Class="pa-3 d-flex justify-center gap-3 mt-4 flex-wrap" Style="max-width: 950px;">
+        <MudSelect T="int" Label="Sorting Algorithm" @bind-Value="SelectedSort" Style="min-width:150px;">
+            <MudSelectItem Value="1">Bubble Sort</MudSelectItem>
+            <MudSelectItem Value="2">Selection Sort</MudSelectItem>
+            <MudSelectItem Value="3">Insertion Sort</MudSelectItem>
+            <MudSelectItem Value="4">Merge Sort</MudSelectItem>
+            <MudSelectItem Value="5">Quick Sort</MudSelectItem>
+        </MudSelect>
+
+        <MudButton OnClick="RunSort" Color="Color.Primary" Variant="Variant.Outlined" Disabled="@IsSorting">Sort</MudButton>
+        <MudButton OnClick="TogglePause" Color="Color.Warning" Variant="Variant.Outlined" Disabled="!IsSorting">@PauseLabel</MudButton>
+        <MudButton OnClick="Clear" Color="Color.Secondary" Variant="Variant.Outlined">Clear</MudButton>
+        <MudButton OnClick="Randomize" Color="Color.Tertiary" Variant="Variant.Outlined">Randomize</MudButton>
+    </MudPaper>
+</div>
+
+@code {
+    private int SelectedSort = 1;
+    private int Speed = 150;
+    private bool Paused = false;
+    private bool IsSorting = false;
+    private string PauseLabel => Paused ? "Resume" : "Pause";
+
+    private DotNetObjectReference<SortAnimation>? objRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            objRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("initSortKonva");
+            await JS.InvokeVoidAsync("setSortFinishCallback", objRef);
+        }
+    }
+
+    private async Task RunSort()
+    {
+        IsSorting = true;
+        Paused = false;
+        StateHasChanged();
+
+        await JS.InvokeVoidAsync("setSortSpeed", Speed);
+        await JS.InvokeVoidAsync("animateSort", SelectedSort);
+    }
+
+    [JSInvokable]
+    public Task OnSortFinished()
+    {
+        IsSorting = false;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private async Task TogglePause()
+    {
+        Paused = !Paused;
+        await JS.InvokeVoidAsync(Paused ? "pauseSort" : "resumeSort");
+        StateHasChanged();
+    }
+
+    private async Task Clear()
+    {
+        IsSorting = false;
+        Paused = false;
+        await JS.InvokeVoidAsync("clearSortBoard");
+        StateHasChanged();
+    }
+
+    private async Task Randomize()
+    {
+        await JS.InvokeVoidAsync("randomizeSortArray");
+    }
+
+    public void Dispose()
+    {
+        objRef?.Dispose();
+    }
+}
+

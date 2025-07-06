@@ -26,7 +26,11 @@
                 <LessonContentView Content="content" />
                 lessonContentCount++;
 
-                if (LessonId == 4 && lessonContentCount == 1)
+                if (LessonId == 3 && lessonContentCount == 1)
+                {
+                    <SortAnimation />
+                }
+                else if (LessonId == 4 && lessonContentCount == 1)
                 {
                     <SearchAnimation />
                 }
@@ -44,11 +48,10 @@
                         <MudTabPanel Text="@snippet.Language">
                             <CodeBlock Code="@snippet.Code"
                                        Language="@GetCodeLanguage(snippet.Language)" />
-
                             @if (!string.IsNullOrWhiteSpace(snippet.Output))
                             {
                                 <div class="mt-3">
-                                    <strong>Output:</strong>
+                                    <strong class="mb-1">Output:</strong>
                                     <pre class="bg-light p-2 border rounded">@snippet.Output</pre>
                                 </div>
                             }
