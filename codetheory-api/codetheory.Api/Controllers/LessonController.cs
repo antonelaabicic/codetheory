@@ -30,7 +30,9 @@ namespace codetheory.Api.Controllers
         {
             var lesson = _lessonService.GetLessonById(lessonId);
             if (lesson == null)
+            {
                 return NotFound();
+            }
 
             var contents = _contentService.GetContentsByLessonId(lessonId);
             lesson.Contents = contents.ToList();

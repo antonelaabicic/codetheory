@@ -10,6 +10,8 @@ namespace codetheory.BL
         {
             services.AddScoped<ILessonService, LessonService>();
             services.AddScoped<ILessonContentService, LessonContentService>();
+            services.AddScoped<IQuestionService, QuestionService>();
+            services.AddScoped<IAnswerService, AnswerService>();
 
             return services;
         }

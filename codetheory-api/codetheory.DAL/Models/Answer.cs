@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace codetheory.DAL.Models;
+﻿namespace codetheory.DAL.Models;
 
 public partial class Answer
 {
