@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Brism" Version="1.0.1" />
+    <PackageReference Include="DotNetEnv" Version="3.1.1" />
     <PackageReference Include="MudBlazor" Version="8.9.0" />
   </ItemGroup>
 

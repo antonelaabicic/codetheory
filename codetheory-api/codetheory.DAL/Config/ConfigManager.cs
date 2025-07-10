@@ -4,30 +4,45 @@ namespace codetheory.DAL.Config
 {
     public static class ConfigManager
     {
-        private static string? _connectionString;
+        private static bool _loaded = false;
 
-        public static string ConnectionString
+        private static void EnsureEnvLoaded()
         {
-            get
-            {
-                if (_connectionString != null)
-                {
-                    return _connectionString;
-                }
+            if (_loaded) return;
 
-                var envPath = Path.Combine(AppContext.BaseDirectory, "Resources", ".env");
+            var envPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "codetheory.DAL", "Resources", ".env"));
+            if (!File.Exists(envPath))
+                throw new FileNotFoundException($".env file not found at: {envPath}");
 
-                if (!File.Exists(envPath))
-                    throw new FileNotFoundException($".env file not found at: {envPath}");
-
-                Env.Load(envPath);
-                _connectionString = Env.GetString("PSQL_CONNECTION_STRING");
-
-                if (string.IsNullOrWhiteSpace(_connectionString))
-                    throw new InvalidOperationException("PSQL_CONNECTION_STRING not found in .env");
-
-                return _connectionString;
-            }
+            Env.Load(envPath);
+            _loaded = true;
         }
+
+        private static string GetRequiredEnv(string key, int? requiredLength = null)
+        {
+            EnsureEnvLoaded();
+            var value = Env.GetString(key);
+
+            if (string.IsNullOrWhiteSpace(value))
+                throw new InvalidOperationException($"{key} not found in .env file.");
+
+            if (requiredLength.HasValue && value.Length != requiredLength.Value)
+                throw new InvalidOperationException($"{key} must be exactly {requiredLength.Value} characters.");
+
+            return value;
+        }
+
+        public static string ConnectionString => GetRequiredEnv("PSQL_CONNECTION_STRING");
+        public static string UserEncryptionKey => GetRequiredEnv("USER_ENCRYPTION_KEY", 32);
+        public static string SupabaseUrl => GetRequiredEnv("SUPABASE_URL");
+        public static string SupabaseBucket => GetRequiredEnv("SUPABASE_BUCKET");
+        public static string SupabaseServiceRoleKey => GetRequiredEnv("SUPABASE_SERVICE_ROLE_KEY");
+
+        public static string SupabasePublicBaseUrl => $"{SupabaseUrl}/storage/v1/object/public/{SupabaseBucket}";
+        public static string DefaultImagePath => $"{SupabasePublicBaseUrl}//neutral_profile.png";
+
+        public static string SupabaseUploadUrl(string fileName) => $"{SupabaseUrl}/storage/v1/object/{SupabaseBucket}/{fileName}";
+        public static string SupabaseDeleteUrl(string fileName) => $"{SupabaseUrl}/storage/v1/object/{SupabaseBucket}/{fileName}";
+        public static string SupabasePublicUrl(string fileName) => $"{SupabasePublicBaseUrl}/{fileName}";
     }
 }

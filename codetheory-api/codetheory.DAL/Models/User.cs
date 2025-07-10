@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EntityFrameworkCore.EncryptColumn.Attribute;
+using System;
 using System.Collections.Generic;
 
 namespace codetheory.DAL.Models;
@@ -9,16 +10,18 @@ public partial class User
 
     public string Username { get; set; } = null!;
 
+    [EncryptColumn]
     public string Email { get; set; } = null!;
 
     public string PasswordHash { get; set; } = null!;
 
-    public string? Salt { get; set; }
-
+    [EncryptColumn]
     public string? FirstName { get; set; }
 
+    [EncryptColumn]
     public string? LastName { get; set; }
 
+    [EncryptColumn]
     public string? ImagePath { get; set; }
 
     public int? RoleId { get; set; }

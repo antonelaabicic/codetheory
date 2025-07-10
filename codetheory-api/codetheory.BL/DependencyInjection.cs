@@ -1,5 +1,9 @@
 ﻿using codetheory.BL.Services.Impl;
 using codetheory.BL.Services.Interfaces;
+using codetheory.DAL.Config;
+using codetheory.DAL.Models;
+using EntityFrameworkCore.EncryptColumn.Interfaces;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace codetheory.BL
@@ -12,6 +16,10 @@ namespace codetheory.BL
             services.AddScoped<ILessonContentService, LessonContentService>();
             services.AddScoped<IQuestionService, QuestionService>();
             services.AddScoped<IAnswerService, AnswerService>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+            services.AddSingleton<IEncryptionProvider>(_ => EncryptionService.GetProvider());
+            services.AddScoped<ISupabaseService, SupabaseService>();
 
             return services;
         }

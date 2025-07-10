@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using codetheory.DAL.Config;
+using EntityFrameworkCore.EncryptColumn.Extension;
 using Microsoft.EntityFrameworkCore;
 
 namespace codetheory.DAL.Models;
@@ -34,6 +36,8 @@ public partial class CodeTheoryContext : DbContext
     public virtual DbSet<UserProgress> UserProgresses { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.UseEncryption(EncryptionService.GetProvider());
+
         modelBuilder.Entity<Answer>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("answer_pkey");
@@ -157,7 +161,6 @@ public partial class CodeTheoryContext : DbContext
             entity.Property(e => e.LastName).HasColumnName("last_name");
             entity.Property(e => e.PasswordHash).HasColumnName("password_hash");
             entity.Property(e => e.RoleId).HasColumnName("role_id");
-            entity.Property(e => e.Salt).HasColumnName("salt");
             entity.Property(e => e.Username)
                 .HasMaxLength(50)
                 .HasColumnName("username");

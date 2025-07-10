@@ -1,9 +1,6 @@
 ﻿@page "/lesson/{LessonId:int}"
 @inject IHttpClientFactory ClientFactory
-@using System.Text.Json
-@using codetheory.Web.Models
-@using MudBlazor
-@using Brism
+
 @rendermode InteractiveServer
 
 <h1 class="mt-3">@lesson?.Title</h1>

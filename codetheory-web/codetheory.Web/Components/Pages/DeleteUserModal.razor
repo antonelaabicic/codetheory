@@ -1,0 +1,48 @@
+﻿@inject IHttpClientFactory ClientFactory
+
+@code {
+    [Parameter] public EventCallback OnUserDeleted { get; set; }
+
+    private UserDto? selectedUser;
+    private bool isVisible = false;
+
+    public void Show(UserDto user)
+    {
+        selectedUser = user;
+        isVisible = true;
+    }
+
+    private void Close() => isVisible = false;
+
+    private async Task ConfirmDelete()
+    {
+        if (selectedUser != null)
+        {
+            var client = ClientFactory.CreateClient("Api");
+            await client.DeleteAsync($"api/user/{selectedUser.Id}");
+            Close();
+            await OnUserDeleted.InvokeAsync();
+        }
+    }
+}
+
+@if (isVisible && selectedUser != null)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete User</h5>
+                    <button type="button" class="btn-close" @onclick="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete <strong>@selectedUser.FirstName @selectedUser.LastName</strong>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="Close">Cancel</button>
+                    <button class="btn btn-danger" @onclick="ConfirmDelete">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,79 @@
+﻿@page "/users"
+@inject IHttpClientFactory ClientFactory
+@rendermode InteractiveServer
+
+<h2 class="my-4 d-flex justify-content-between align-items-center">
+    <span>Users</span>
+    <button class="btn btn-primary" @onclick="OpenAddUserModal">Add User</button>
+</h2>
+
+@if (users == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    @RenderRoleSection("Admins", 1)
+    @RenderRoleSection("Teachers", 2)
+    @RenderRoleSection("Students", 3)
+}
+
+<AddUserModal @ref="addUserModal" OnUserAdded="ReloadUsers" />
+<EditUserModal @ref="editUserModal" OnUserEdited="ReloadUsers" />
+<DeleteUserModal @ref="deleteUserModal" OnUserDeleted="ReloadUsers" />
+
+@code {
+    private List<UserDto>? users;
+
+    private AddUserModal? addUserModal;
+    private EditUserModal? editUserModal;
+    private DeleteUserModal? deleteUserModal;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsers();
+    }
+
+    private async Task LoadUsers()
+    {
+        var client = ClientFactory.CreateClient("Api");
+        users = await client.GetFromJsonAsync<List<UserDto>>("api/user");
+    }
+
+    private async Task ReloadUsers()
+    {
+        await LoadUsers();
+        StateHasChanged();
+    }
+
+    private void OpenAddUserModal() => addUserModal?.Show();
+    private void OpenEditUserModal(UserDto user) => editUserModal?.Show(user);
+    private void OpenDeleteUserModal(UserDto user) => deleteUserModal?.Show(user);
+
+    RenderFragment RenderRoleSection(string title, int roleId) => @<div class="mb-5">
+        <h4 class="mb-3">@title</h4>
+        <div class="row g-4">
+            @foreach (var user in users!.Where(u => u.RoleId == roleId))
+            {
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="@user.ImagePath" class="rounded-circle me-3" width="50" height="50" />
+                                <div>
+                                    <h5 class="card-title mb-0">@user.Username</h5>
+                                    <small class="text-muted">@user.Email</small>
+                                </div>
+                            </div>
+                            <p class="card-text">Name: @user.FirstName @user.LastName</p>
+                        </div>
+                        <div class="card-footer d-flex justify-content-center gap-2">
+                            <button class="btn btn-sm btn-outline-primary" @onclick="() => OpenEditUserModal(user)">Edit</button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => OpenDeleteUserModal(user)">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>;
+}

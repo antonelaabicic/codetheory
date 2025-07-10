@@ -1,0 +1,79 @@
+﻿@inject IHttpClientFactory ClientFactory
+
+@code {
+    [Parameter] public EventCallback OnUserAdded { get; set; }
+
+    private CreateUserDto newUser = new();
+    private bool isVisible = false;
+    private IBrowserFile? selectedImage;
+
+    public void Show()
+    {
+        newUser = new CreateUserDto();
+        selectedImage = null;
+        isVisible = true;
+    }
+
+    private void Close() => isVisible = false;
+
+    private async Task Submit()
+    {
+        var client = ClientFactory.CreateClient("Api");
+
+        if (selectedImage != null)
+        {
+            var streamContent = new StreamContent(selectedImage.OpenReadStream(10 * 1024 * 1024));
+            streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(selectedImage.ContentType ?? "application/octet-stream");
+
+            var content = new MultipartFormDataContent();
+            content.Add(streamContent, "file", selectedImage.Name);
+
+            var uploadResponse = await client.PostAsync("api/image/upload", content);
+            if (uploadResponse.IsSuccessStatusCode)
+            {
+                var json = await uploadResponse.Content.ReadFromJsonAsync<JsonElement>();
+                newUser.ImagePath = json.GetProperty("imageUrl").GetString();
+            }
+        }
+        
+        await client.PostAsJsonAsync("api/user", newUser);
+        Close();
+        await OnUserAdded.InvokeAsync();
+    }
+
+    private void OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        selectedImage = e.File;
+    }
+}
+
+@if (isVisible)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add User</h5>
+                    <button type="button" class="btn-close" @onclick="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <InputText class="form-control mb-2" @bind-Value="newUser.Username" placeholder="Username" />
+                    <InputText class="form-control mb-2" @bind-Value="newUser.Email" placeholder="Email" />
+                    <InputText class="form-control mb-2" @bind-Value="newUser.FirstName" placeholder="First Name" />
+                    <InputText class="form-control mb-2" @bind-Value="newUser.LastName" placeholder="Last Name" />
+                    <InputText class="form-control mb-2" @bind-Value="newUser.Password" placeholder="Password" type="password" />
+                    <InputFile OnChange="OnInputFileChange" class="form-control mb-2" />
+                    <select class="form-select" @bind="newUser.RoleId">
+                        <option value="1">Admin</option>
+                        <option value="2">Teacher</option>
+                        <option value="3">Student</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="Close">Cancel</button>
+                    <button class="btn btn-primary" @onclick="Submit">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

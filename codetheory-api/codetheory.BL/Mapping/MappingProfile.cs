@@ -13,8 +13,10 @@ namespace codetheory.BL.Mapping
                 .ReverseMap();
 
             CreateMap<LessonContent, LessonContentDto>().ReverseMap();
-            CreateMap<Answer, AnswerDto>();
-            CreateMap<Question, QuestionDto>();
+            CreateMap<Answer, AnswerDto>().ReverseMap();
+            CreateMap<Question, QuestionDto>().ReverseMap();
+            CreateMap<User, UserDto>().ReverseMap();
+            CreateMap<User, CreateUserDto>().ReverseMap();
         }
     }
 }

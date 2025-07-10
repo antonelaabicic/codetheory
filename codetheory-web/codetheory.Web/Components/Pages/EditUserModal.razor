@@ -1,0 +1,125 @@
+﻿@inject IHttpClientFactory ClientFactory
+@inject IJSRuntime JS
+
+@code {
+    [Parameter] public EventCallback OnUserEdited { get; set; }
+
+    private UserDto editingUser = new();
+    private bool isVisible = false;
+    private IBrowserFile? selectedImage;
+    private string? oldImagePath;
+    private string? previewUrl;
+
+    public void Show(UserDto user)
+    {
+        editingUser = new UserDto
+        {
+            Id = user.Id,
+            Username = user.Username,
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            ImagePath = user.ImagePath,
+            RoleId = user.RoleId
+        };
+
+        oldImagePath = user.ImagePath;
+        selectedImage = null;
+        previewUrl = null;
+        isVisible = true;
+    }
+
+    private void Close() => isVisible = false;
+
+    private async Task Submit()
+    {
+        var client = ClientFactory.CreateClient("Api");
+
+        if (selectedImage != null)
+        {
+            using var stream = selectedImage.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+            var streamContent = new StreamContent(stream);
+            streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(
+                selectedImage.ContentType ?? "application/octet-stream"
+            );
+
+            var content = new MultipartFormDataContent();
+            content.Add(streamContent, "file", selectedImage.Name);
+
+            var uploadResponse = await client.PostAsync("api/image/upload", content);
+            if (uploadResponse.IsSuccessStatusCode)
+            {
+                var json = await uploadResponse.Content.ReadFromJsonAsync<JsonElement>();
+                var newImageUrl = json.GetProperty("imageUrl").GetString();
+
+                if (!string.IsNullOrWhiteSpace(oldImagePath) && !oldImagePath.Contains("neutral_profile.png"))
+                {
+                    await client.DeleteAsync($"api/image/delete?imageUrl={Uri.EscapeDataString(oldImagePath)}");
+                }
+
+                editingUser.ImagePath = newImageUrl!;
+            }
+        }
+
+        await client.PutAsJsonAsync($"api/user/{editingUser.Id}", editingUser);
+        Close();
+        await OnUserEdited.InvokeAsync();
+    }
+
+    private async Task HandleImageClick()
+    {
+        await JS.InvokeVoidAsync("triggerFileInput", "editImageUpload");
+    }
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        selectedImage = e.File;
+
+        using var stream = selectedImage.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+        var buffer = new byte[selectedImage.Size];
+        await stream.ReadAsync(buffer);
+
+        previewUrl = $"data:{selectedImage.ContentType};base64,{Convert.ToBase64String(buffer)}";
+
+        StateHasChanged(); 
+    }
+}
+
+@if (isVisible)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit User</h5>
+                    <button type="button" class="btn-close" @onclick="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-3">
+                        <img src="@(!string.IsNullOrWhiteSpace(previewUrl) ? previewUrl : editingUser.ImagePath)"
+                             class="rounded-circle"
+                             style="width: 100px; height: 100px; object-fit: cover; cursor: pointer;"
+                             @onclick="HandleImageClick"
+                             alt="Click to change image" />
+                        <InputFile id="editImageUpload" style="display: none;" OnChange="OnInputFileChange" />
+                    </div>
+
+                    <InputText class="form-control mb-2" @bind-Value="editingUser.Username" placeholder="Username" />
+                    <InputText class="form-control mb-2" @bind-Value="editingUser.Email" placeholder="Email" />
+                    <InputText class="form-control mb-2" @bind-Value="editingUser.FirstName" placeholder="First Name" />
+                    <InputText class="form-control mb-2" @bind-Value="editingUser.LastName" placeholder="Last Name" />
+                    <select class="form-select" @bind="editingUser.RoleId">
+                        <option value="1">Admin</option>
+                        <option value="2">Teacher</option>
+                        <option value="3">Student</option>
+                    </select>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="Close">Cancel</button>
+                    <button class="btn btn-primary" @onclick="Submit">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
