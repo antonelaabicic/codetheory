@@ -1,4 +1,4 @@
-﻿@inject IHttpClientFactory ClientFactory
+﻿@inject AuthorizedHttpClient AuthorizedClient
 
 @code {
     [Parameter] public EventCallback OnUserDeleted { get; set; }
@@ -18,7 +18,7 @@
     {
         if (selectedUser != null)
         {
-            var client = ClientFactory.CreateClient("Api");
+            var client = await AuthorizedClient.GetClientAsync();
             await client.DeleteAsync($"api/user/{selectedUser.Id}");
             Close();
             await OnUserDeleted.InvokeAsync();

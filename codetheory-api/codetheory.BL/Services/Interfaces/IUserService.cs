@@ -1,4 +1,5 @@
 ﻿using codetheory.BL.DTOs;
+using codetheory.DAL.Models;
 
 namespace codetheory.BL.Services.Interfaces
 {
@@ -10,5 +11,6 @@ namespace codetheory.BL.Services.Interfaces
         void AddUser(CreateUserDto userDto);
         void UpdateUser(int id, UserDto userDto);
         void DeleteUser(int id);
+        UserDto? GetUserByUsername(string username);
     }
 }

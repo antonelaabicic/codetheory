@@ -1,5 +1,6 @@
 using Brism;
 using codetheory.Web.Components;
+using codetheory.Web.Services;
 using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +13,9 @@ builder.Services.AddHttpClient("Api", client =>
 {
     client.BaseAddress = new Uri("http://localhost:5111");
 });
+
+builder.Services.AddSingleton<AuthStateService>();
+builder.Services.AddScoped<AuthorizedHttpClient>();
 
 var app = builder.Build();
 

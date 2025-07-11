@@ -1,4 +1,4 @@
-﻿@inject IHttpClientFactory ClientFactory
+﻿@inject AuthorizedHttpClient AuthorizedClient
 @inject IJSRuntime JS
 
 @code {
@@ -33,7 +33,7 @@
 
     private async Task Submit()
     {
-        var client = ClientFactory.CreateClient("Api");
+        var client = await AuthorizedClient.GetClientAsync();
 
         if (selectedImage != null)
         {

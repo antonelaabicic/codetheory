@@ -23,11 +23,14 @@ namespace codetheory.DAL.Config
             EnsureEnvLoaded();
             var value = Env.GetString(key);
 
-            if (string.IsNullOrWhiteSpace(value))
+            if (string.IsNullOrWhiteSpace(value)) { 
                 throw new InvalidOperationException($"{key} not found in .env file.");
+            }
 
             if (requiredLength.HasValue && value.Length != requiredLength.Value)
+            {
                 throw new InvalidOperationException($"{key} must be exactly {requiredLength.Value} characters.");
+            }
 
             return value;
         }
@@ -44,5 +47,7 @@ namespace codetheory.DAL.Config
         public static string SupabaseUploadUrl(string fileName) => $"{SupabaseUrl}/storage/v1/object/{SupabaseBucket}/{fileName}";
         public static string SupabaseDeleteUrl(string fileName) => $"{SupabaseUrl}/storage/v1/object/{SupabaseBucket}/{fileName}";
         public static string SupabasePublicUrl(string fileName) => $"{SupabasePublicBaseUrl}/{fileName}";
+
+        public static string JwtSecret => GetRequiredEnv("JWT_SECRET", 32);
     }
 }

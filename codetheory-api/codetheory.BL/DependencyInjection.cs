@@ -20,6 +20,7 @@ namespace codetheory.BL
             services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
             services.AddSingleton<IEncryptionProvider>(_ => EncryptionService.GetProvider());
             services.AddScoped<ISupabaseService, SupabaseService>();
+            services.AddScoped<IAuthService, AuthService>();
 
             return services;
         }

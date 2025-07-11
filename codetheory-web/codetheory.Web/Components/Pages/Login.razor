@@ -1,0 +1,85 @@
+﻿@page "/login"
+@inject IHttpClientFactory ClientFactory
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@inject AuthStateService AuthService
+@rendermode InteractiveServer
+
+<div class="d-flex justify-content-center align-items-center" style="height: 75vh;">
+    <div style="width: 100%; max-width: 400px;">
+        <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            @if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                <div class="alert alert-danger text-center mt-3">@errorMessage</div>
+            }
+            <h1 class="text-center">Login</h1>
+
+            <div class="mb-3">
+                <InputText class="form-control form-control-lg" @bind-Value="loginModel.Username" placeholder="Username" />
+            </div>
+            <div class="mb-4">
+                <InputText class="form-control form-control-lg" @bind-Value="loginModel.Password" placeholder="Password" type="password" />
+            </div>
+            <button class="btn btn-primary btn-lg w-100">Login</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private LoginDto loginModel = new();
+    private string? errorMessage;
+
+    private async Task HandleLogin()
+    {
+        var client = ClientFactory.CreateClient("Api");
+        var response = await client.PostAsJsonAsync("api/auth/login", loginModel);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var json = await response.Content.ReadFromJsonAsync<JsonElement>();
+            var token = json.GetProperty("token").GetString();
+
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                await JS.InvokeVoidAsync("sessionStorage.setItem", "jwt", token);
+                var role = ParseRoleFromJwt(token);
+                AuthService.SetUser(role, true);
+
+                if (role == "admin")
+                {
+                    NavigateWithReload("/users");
+                }
+                else if (role == "student")
+                {
+                    NavigateWithReload($"/lesson/{1}");
+                }
+            }
+        }
+        else
+        {
+            errorMessage = "Invalid username or password.";
+        }
+    }
+
+    private string? ParseRoleFromJwt(string jwt)
+    {
+        var payload = jwt.Split('.')[1];
+        var json = System.Text.Json.JsonSerializer.Deserialize<JsonElement>(
+            System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(PadBase64(payload)))
+        );
+        return json.TryGetProperty("role", out var role) ? role.GetString() : null;
+    }
+
+    private string PadBase64(string input) {
+        return input.PadRight(input.Length + (4 - input.Length % 4) % 4, '=');
+    }
+
+    private void NavigateWithReload(string url)
+    {
+        Navigation.NavigateTo(url, forceLoad: true);
+        Navigation.Refresh();
+    }
+}

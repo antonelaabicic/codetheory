@@ -131,5 +131,18 @@ namespace codetheory.BL.Services.Impl
 
             return _mapper.Map<IEnumerable<UserDto>>(users);
         }
+
+        public UserDto? GetUserByUsername(string username)
+        {
+            var user = _userRepository.GetByUsername(username);
+            if (user == null)
+            {
+                throw new ArgumentException($"User not found.");
+            }
+
+            DecryptSensitiveFields(user);
+
+            return _mapper.Map<UserDto>(user);
+        }
     }
 }

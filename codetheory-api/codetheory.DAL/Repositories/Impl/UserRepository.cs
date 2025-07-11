@@ -1,5 +1,6 @@
 ﻿using codetheory.DAL.Models;
 using codetheory.DAL.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace codetheory.DAL.Repositories.Impl
 {
@@ -32,6 +33,11 @@ namespace codetheory.DAL.Repositories.Impl
         public User? GetById(int id)
         {
             return _context.Users.Find(id);
+        }
+
+        public User? GetByUsername(string username)
+        {
+            return _context.Users.Include(u => u.Role).FirstOrDefault(u => u.Username == username);
         }
 
         public IEnumerable<User> GetUsersByRoleId(int roleId)

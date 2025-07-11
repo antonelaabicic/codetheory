@@ -1,0 +1,21 @@
+﻿@page "/logout"
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@inject AuthStateService AuthService
+@rendermode InteractiveServer
+
+@code {
+    private bool _hasLoggedOut = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_hasLoggedOut)
+        {
+            _hasLoggedOut = true;
+
+            await JS.InvokeVoidAsync("sessionStorage.removeItem", "jwt");
+            AuthService.Logout();
+            Navigation.NavigateTo("/", forceLoad: true);
+        }
+    }
+}

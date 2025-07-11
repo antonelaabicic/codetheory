@@ -1,5 +1,6 @@
 ﻿@page "/lesson/{LessonId:int}/quiz"
-@inject IHttpClientFactory ClientFactory
+@inject AuthorizedHttpClient AuthorizedClient
+@inject NavigationManager Navigation
 @rendermode InteractiveServer
 
 <h1 class="mt-3">Quiz @LessonId</h1>
@@ -18,7 +19,7 @@
 
                 <MudCard Class="mb-4 px-4 pt-4 pb-2">
                     <MudText Typo="Typo.h6" Class="mb-2">
-                        @($"{q.QuestionOrder}. {json.RootElement.GetProperty("prompt").GetString()}")
+                        @($"{q.QuestionOrder}. {json.RootElement.GetProperty("prompt").GetString()} ")
                     </MudText>
 
                     @if (json.RootElement.TryGetProperty("code", out var codeElement))
@@ -40,7 +41,6 @@
                             <MudRadio T="int?" Option="@a.Id" Label="@a.AnswerText" />
                         }
                     </MudRadioGroup>
-
                 </MudCard>
             }
 
@@ -51,22 +51,56 @@
     }
 </MudPaper>
 
+<div class="d-flex align-items-center my-4">
+
+        <button class="btn btn-outline-primary" @onclick="GoBack">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"></path>
+            </svg>
+        </button>
+
+    <div class="flex-grow-1"></div>
+    @if (LessonId < 5)
+    {
+        <button class="btn btn-outline-success" @onclick="GoNext">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"></path>
+            </svg>
+        </button>
+    }
+</div>
+
 @code {
     [Parameter] public int LessonId { get; set; }
 
     private List<QuestionDto>? questions;
     private Dictionary<int, int?> userAnswers = new();
+    private bool _initialized = false;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var client = ClientFactory.CreateClient("Api");
-        questions = await client.GetFromJsonAsync<List<QuestionDto>>($"api/question/{LessonId}/quiz");
-
-        if (questions != null)
+        if (firstRender && !_initialized)
         {
-            foreach (var question in questions)
+            _initialized = true;
+
+            try
             {
-                userAnswers[question.Id] = null; 
+                var client = await AuthorizedClient.GetClientAsync();
+                questions = await client.GetFromJsonAsync<List<QuestionDto>>($"api/question/{LessonId}/quiz");
+
+                if (questions != null)
+                {
+                    foreach (var question in questions)
+                    {
+                        userAnswers[question.Id] = null;
+                    }
+                }
+
+                StateHasChanged(); 
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Quiz fetch failed: {ex.Message}");
             }
         }
     }
@@ -78,6 +112,18 @@
             Console.WriteLine($"Question {entry.Key} → Selected Answer {entry.Value}");
         }
 
-        // TODO: Post userAnswers to API 
+        // TODO: Post to API
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/lesson/" + (LessonId), forceLoad: false);
+        Navigation.Refresh();
+    }
+
+    private void GoNext()
+    {
+        Navigation.NavigateTo("/lesson/" + (LessonId + 1), forceLoad: false);
+        Navigation.Refresh();
     }
 }

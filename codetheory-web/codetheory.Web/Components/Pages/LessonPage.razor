@@ -1,6 +1,6 @@
 ﻿@page "/lesson/{LessonId:int}"
-@inject IHttpClientFactory ClientFactory
-
+@inject AuthorizedHttpClient AuthorizedClient
+@inject NavigationManager Navigation
 @rendermode InteractiveServer
 
 <h1 class="mt-3">@lesson?.Title</h1>
@@ -58,7 +58,29 @@
             }
         }
     </div>
+
+    <div class="d-flex align-items-center my-4">
+        @if (LessonId > 1)
+        {
+            <button class="btn btn-outline-primary" @onclick="GoBack">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"></path>
+                </svg>
+            </button>
+        }
+
+        <div class="flex-grow-1"></div> 
+        @if (LessonId < 5)
+        {
+            <button class="btn btn-outline-success" @onclick="GoNext">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"></path>
+                </svg>
+            </button>
+        }
+    </div>
 }
+
 else
 {
     <p>Loading lesson...</p>
@@ -68,39 +90,47 @@ else
     [Parameter] public int LessonId { get; set; }
     private LessonDTO? lesson;
     private List<object> RenderItems = new();
+    private bool _hasLoaded = false;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var client = ClientFactory.CreateClient("Api");
-        lesson = await client.GetFromJsonAsync<LessonDTO>($"api/Lesson/{LessonId}");
-
-        if (lesson?.Contents != null)
+        if (firstRender && !_hasLoaded)
         {
-            var ordered = lesson.Contents.OrderBy(c => c.ContentOrder).ToList();
-            List<LessonContentDTO> buffer = new();
+            _hasLoaded = true;
 
-            foreach (var content in ordered)
+            var client = await AuthorizedClient.GetClientAsync();
+            lesson = await client.GetFromJsonAsync<LessonDTO>($"api/Lesson/{LessonId}");
+
+            if (lesson?.Contents != null)
             {
-                if (content.ContentTypeId == 4)
+                var ordered = lesson.Contents.OrderBy(c => c.ContentOrder).ToList();
+                List<LessonContentDTO> buffer = new();
+
+                foreach (var content in ordered)
                 {
-                    buffer.Add(content);
-                }
-                else
-                {
-                    if (buffer.Any())
+                    if (content.ContentTypeId == 4)
                     {
-                        RenderItems.Add(ToCodeSnippets(buffer));
-                        buffer.Clear();
+                        buffer.Add(content);
                     }
+                    else
+                    {
+                        if (buffer.Any())
+                        {
+                            RenderItems.Add(ToCodeSnippets(buffer));
+                            buffer.Clear();
+                        }
 
-                    RenderItems.Add(content);
+                        RenderItems.Add(content);
+                    }
+                }
+
+                if (buffer.Any())
+                {
+                    RenderItems.Add(ToCodeSnippets(buffer));
                 }
             }
 
-            if (buffer.Any())
-            {
-                RenderItems.Add(ToCodeSnippets(buffer));
-            }
+            StateHasChanged(); 
         }
     }
 
@@ -136,4 +166,16 @@ else
         "python" => CodeLanguage.Python,
         _ => CodeLanguage.Markdown
     };
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/lesson/" + (LessonId - 1) + "/quiz", forceLoad: false);
+        Navigation.Refresh();
+    }
+
+    private void GoNext()
+    {
+        Navigation.NavigateTo("/lesson/" + (LessonId) + "/quiz", forceLoad: false);
+        Navigation.Refresh();
+    }
 }
