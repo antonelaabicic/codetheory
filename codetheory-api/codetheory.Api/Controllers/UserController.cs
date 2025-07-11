@@ -8,7 +8,6 @@ namespace codetheory.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "admin")]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -18,13 +17,15 @@ namespace codetheory.Api.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "admin")]
         public ActionResult<IEnumerable<UserDto>> GetAllUsers()
         {
             var users = _userService.GetAllUsers();
             return Ok(users);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
+        [Authorize(Roles = "admin")]
         public ActionResult<UserDto> GetUser(int id)
         {
             try
@@ -39,6 +40,7 @@ namespace codetheory.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "admin")]
         public IActionResult AddUser([FromBody] CreateUserDto userDto)
         {
             if (!ModelState.IsValid)
@@ -58,6 +60,7 @@ namespace codetheory.Api.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "admin")]
         public IActionResult UpdateUser(int id, [FromBody] UserDto userDto)
         {
             if (!ModelState.IsValid)
@@ -77,6 +80,7 @@ namespace codetheory.Api.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "admin")]
         public IActionResult DeleteUser(int id)
         {
             try
@@ -91,11 +95,26 @@ namespace codetheory.Api.Controllers
         }
 
         [HttpGet("role/{roleId}")]
+        [Authorize(Roles = "admin")]
         public ActionResult<IEnumerable<UserDto>> GetUsersByRoleId(int roleId)
         {
             var users = _userService.GetUsersByRoleId(roleId);
             return Ok(users);
         }
 
+        [HttpGet("by-username/{username}")]
+        [Authorize]
+        public ActionResult<UserDto> GetUserByUsername(string username)
+        {
+            try
+            {
+                var user = _userService.GetUserByUsername(username);
+                return Ok(user);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
     }
 }

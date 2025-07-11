@@ -1,13 +1,12 @@
-﻿using codetheory.BL.Services.Impl;
-using codetheory.BL.Services.Interfaces;
-using Microsoft.AspNetCore.Http;
+﻿using codetheory.BL.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 
 namespace codetheory.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "student, teacher")]
     public class QuestionController : ControllerBase
     {
         private readonly IQuestionService _questionService;

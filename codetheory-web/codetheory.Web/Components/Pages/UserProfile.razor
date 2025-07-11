@@ -1,0 +1,75 @@
+﻿@page "/profile"
+@inject AuthorizedHttpClient AuthorizedClient
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<h3 class="mt-1">User Profile</h3>
+
+@if (user == null)
+{
+    <div class="text-muted">Loading profile...</div>
+}
+else
+{
+    <div class="d-flex flex-column align-items-center text-center mt-4">
+        <img src="@user.ImagePath"
+             class="rounded-circle shadow-sm mb-3"
+             style="width: 160px; height: 160px; object-fit: cover;"
+             alt="User profile image" />
+
+        <h4>@user.FirstName @user.LastName</h4>
+        <p class="mb-1"><strong>Username:</strong> @user.Username</p>
+        <p class="mb-1"><strong>Email:</strong> @user.Email</p>
+        <p class="mb-0"><strong>Role:</strong> @GetRoleName(user.RoleId)</p>
+    </div>
+}
+
+@code {
+    private UserDto? user;
+    private bool _hasLoaded = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || _hasLoaded) return;
+
+        _hasLoaded = true;
+
+        try
+        {
+            var token = await JSRuntime.InvokeAsync<string>("sessionStorage.getItem", "jwt");
+
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                var payload = token.Split('.')[1];
+                var json = System.Text.Json.JsonSerializer.Deserialize<JsonElement>(
+                    System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(PadBase64(payload)))
+                );
+
+                if (json.TryGetProperty("unique_name", out var usernameProp))
+                {
+                    var username = usernameProp.GetString();
+                    var client = await AuthorizedClient.GetClientAsync();
+                    user = await client.GetFromJsonAsync<UserDto>($"api/User/by-username/{username}");
+                    StateHasChanged(); 
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Profile load failed: {ex.Message}");
+        }
+    }
+
+    private string PadBase64(string input) {
+        return input.PadRight(input.Length + (4 - input.Length % 4) % 4, '=');
+    }
+
+    private string GetRoleName(int roleId) => roleId switch
+    {
+        1 => "Admin",
+        2 => "Teacher",
+        3 => "Student",
+        _ => "Unknown"
+    };
+}
+
