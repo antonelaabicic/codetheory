@@ -16,6 +16,7 @@ builder.Services.AddHttpClient("Api", client =>
 
 builder.Services.AddSingleton<AuthStateService>();
 builder.Services.AddScoped<AuthorizedHttpClient>();
+builder.Services.AddScoped<JwtService>();
 
 var app = builder.Build();
 

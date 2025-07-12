@@ -14,6 +14,7 @@ namespace codetheory.DAL
             services.AddScoped<IQuestionRepository, QuestionRepository>();
             services.AddScoped<IAnswerRepository, AnswerRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IUserAnswerRepository, UserAnswerRepository>();
 
             return services;
         }

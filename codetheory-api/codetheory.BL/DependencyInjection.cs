@@ -21,6 +21,7 @@ namespace codetheory.BL
             services.AddSingleton<IEncryptionProvider>(_ => EncryptionService.GetProvider());
             services.AddScoped<ISupabaseService, SupabaseService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IUserAnswerService, UserAnswerService>();
 
             return services;
         }

@@ -1,70 +1,80 @@
 ﻿@page "/lesson/{LessonId:int}/quiz"
 @inject AuthorizedHttpClient AuthorizedClient
 @inject NavigationManager Navigation
+@inject JwtService JwtService
 @rendermode InteractiveServer
 
 <h1 class="mt-3">Quiz @LessonId</h1>
 
-<MudPaper Class="pa-3 mx-auto" MaxWidth="800px">
-    @if (questions == null)
-    {
-        <MudProgressCircular Indeterminate />
-    }
-    else
-    {
-        <EditForm Model="@userAnswers" OnValidSubmit="SubmitAnswers">
-            @foreach (var q in questions.OrderBy(q => q.QuestionOrder))
-            {
-                var json = JsonDocument.Parse(q.QuestionText);
+@if (questions == null || answerSelections == null)
+{
+    <div class="text-muted">Loading quiz...</div>
+}
+else
+{
+    <EditForm Model="@answerSelections" OnValidSubmit="SubmitAnswers">
+        @foreach (var pair in questions.Zip(answerSelections, (q, a) => new { Question = q, Selection = a }))
+        {
+            var q = pair.Question;
+            var json = JsonDocument.Parse(q.QuestionText);
+            var prompt = json.RootElement.GetProperty("prompt").GetString();
 
-                <MudCard Class="mb-4 px-4 pt-4 pb-2">
-                    <MudText Typo="Typo.h6" Class="mb-2">
-                        @($"{q.QuestionOrder}. {json.RootElement.GetProperty("prompt").GetString()} ")
-                    </MudText>
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">@($"{q.QuestionOrder}. {prompt}")</h5>
 
                     @if (json.RootElement.TryGetProperty("code", out var codeElement))
                     {
-                        <CodeBlock Code="@codeElement.GetString()" Language="CodeLanguage.Python" />
+                        <pre><code>@codeElement.GetString()</code></pre>
                     }
 
                     @if (json.RootElement.TryGetProperty("image_path", out var imgElement))
                     {
-                        <div class="d-flex justify-content-center mb-3">
-                            <img src="@imgElement.GetString()" style="max-width: 100%; max-height: 400px;" class="rounded shadow-sm" />
+                        <div class="text-center mb-3">
+                            <img src="@imgElement.GetString()" class="img-fluid rounded" style="max-height: 400px;" />
                         </div>
                     }
 
-                    <MudRadioGroup T="int?" @bind-SelectedOption="userAnswers[q.Id]" Class="mt-2">
-                        <MudRadio T="int?" Option="null" Style="display: none;" />
-                        @foreach (var a in q.Answers)
-                        {
-                            <MudRadio T="int?" Option="@a.Id" Label="@a.AnswerText" />
-                        }
-                    </MudRadioGroup>
-                </MudCard>
-            }
+                    @foreach (var a in q.Answers)
+                    {
+                        <div class="form-check">
+                            <input class="form-check-input"
+                                   type="radio"
+                                   name="question_@q.Id"
+                                   value="@a.Id"
+                                   checked="@(pair.Selection.SelectedAnswerId == a.Id)"
+                                   @onchange="@(() =>
+                                   {
+                                       pair.Selection.SelectedAnswerId = a.Id;
+                                       StateHasChanged();
+                                   })" />
 
-            <div class="d-flex justify-content-center mt-4">
-                <button type="button" class="btn btn-success" @onclick="SubmitAnswers">Submit Quiz</button>
+                            <label class="form-check-label">@a.AnswerText</label>
+                        </div>
+                    }
+                </div>
             </div>
-        </EditForm>
-    }
-</MudPaper>
+        }
+
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-success px-5" disabled="@IsSubmitDisabled">
+                Submit Quiz
+            </button>
+        </div>
+    </EditForm>
+}
 
 <div class="d-flex align-items-center my-4">
-        <button class="btn btn-outline-primary" @onclick="GoBack">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"></path>
-            </svg>
-        </button>
+    <button class="btn btn-outline-primary" @onclick="GoBack">
+        <i class="bi bi-arrow-left"></i> Back
+    </button>
 
     <div class="flex-grow-1"></div>
+
     @if (LessonId < 5)
     {
         <button class="btn btn-outline-success" @onclick="GoNext">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"></path>
-            </svg>
+            Next <i class="bi bi-arrow-right"></i>
         </button>
     }
 </div>
@@ -73,50 +83,108 @@
     [Parameter] public int LessonId { get; set; }
 
     private List<QuestionDto>? questions;
-    private Dictionary<int, int?> userAnswers = new();
+    private List<AnswerSelection> answerSelections = new();
+    private List<UserAnswerDto>? previousAnswers;
+    private int userId;
     private bool _initialized = false;
+
+    private bool IsSubmitDisabled =>
+        answerSelections == null || answerSelections.Any(a => !a.SelectedAnswerId.HasValue);
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && !_initialized)
+        if (!firstRender || _initialized) return;
+        _initialized = true;
+
+        try
         {
-            _initialized = true;
+            var username = await JwtService.GetUsernameAsync();
+            var client = await AuthorizedClient.GetClientAsync();
 
-            try
+            var user = await client.GetFromJsonAsync<UserDto>($"api/user/by-username/{username}");
+            if (user == null)
             {
-                var client = await AuthorizedClient.GetClientAsync();
-                questions = await client.GetFromJsonAsync<List<QuestionDto>>($"api/question/{LessonId}/quiz");
+                Console.WriteLine("User not found.");
+                return;
+            }
 
-                if (questions != null)
+            userId = user.Id;
+
+            questions = await client.GetFromJsonAsync<List<QuestionDto>>($"api/question/{LessonId}/quiz");
+            if (questions == null || questions.Count == 0)
+            {
+                Console.WriteLine("No questions found.");
+                return;
+            }
+
+            previousAnswers = await client.GetFromJsonAsync<List<UserAnswerDto>>($"api/useranswer/user/{userId}/lesson/{LessonId}");
+
+            answerSelections = questions.Select(q =>
+            {
+                var selected = previousAnswers?.FirstOrDefault(a => q.Answers.Any(ans => ans.Id == a.AnswerId));
+                return new AnswerSelection
                 {
-                    foreach (var question in questions)
-                    {
-                        userAnswers[question.Id] = null;
-                    }
-                }
+                    QuestionId = q.Id,
+                    SelectedAnswerId = selected?.AnswerId
+                };
+            }).ToList();
 
-                StateHasChanged(); 
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Quiz fetch failed: {ex.Message}");
-            }
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Quiz init failed: {ex.Message}");
         }
     }
 
-    private void SubmitAnswers()
+    private async Task SubmitAnswers()
     {
-        foreach (var entry in userAnswers)
+        if (questions == null || userId == 0)
         {
-            Console.WriteLine($"Question {entry.Key} → Selected Answer {entry.Value}");
+            Console.WriteLine("Missing user or questions.");
+            return;
         }
 
-        // TODO: Post to API
+        var payload = answerSelections
+            .Where(a => a.SelectedAnswerId.HasValue)
+            .Select(a =>
+            {
+                var q = questions.FirstOrDefault(q => q.Id == a.QuestionId);
+                var selectedAnswer = q?.Answers.FirstOrDefault(ans => ans.Id == a.SelectedAnswerId);
+                if (selectedAnswer == null) return null;
+
+                return new UserAnswerDto
+                {
+                    UserId = userId,
+                    AnswerId = selectedAnswer.Id
+                };
+            })
+            .Where(dto => dto != null)!
+            .ToList();
+
+        if (payload.Count == 0)
+        {
+            Console.WriteLine("No answers to submit.");
+            return;
+        }
+
+        var client = await AuthorizedClient.GetClientAsync();
+
+        if (previousAnswers != null && previousAnswers.Any())
+        {
+            await client.PutAsJsonAsync("api/useranswer", payload);
+        }
+        else
+        {
+            await client.PostAsJsonAsync("api/useranswer", payload);
+        }
+
+        Console.WriteLine("Answers submitted.");
     }
 
     private void GoBack()
     {
-        Navigation.NavigateTo("/lesson/" + (LessonId), forceLoad: false);
+        Navigation.NavigateTo("/lesson/" + LessonId, forceLoad: false);
         Navigation.Refresh();
     }
 
@@ -124,5 +192,11 @@
     {
         Navigation.NavigateTo("/lesson/" + (LessonId + 1), forceLoad: false);
         Navigation.Refresh();
+    }
+
+    private class AnswerSelection
+    {
+        public int QuestionId { get; set; }
+        public int? SelectedAnswerId { get; set; } = null;
     }
 }

@@ -178,7 +178,6 @@ public partial class CodeTheoryContext : DbContext
 
             entity.Property(e => e.UserId).HasColumnName("user_id");
             entity.Property(e => e.AnswerId).HasColumnName("answer_id");
-            entity.Property(e => e.IsCorrect).HasColumnName("is_correct");
 
             entity.HasOne(d => d.Answer).WithMany(p => p.UserAnswers)
                 .HasForeignKey(d => d.AnswerId)
