@@ -22,6 +22,7 @@ namespace codetheory.BL
             services.AddScoped<ISupabaseService, SupabaseService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserAnswerService, UserAnswerService>();
+            services.AddScoped<IUserProgressService, UserProgressService>();
 
             return services;
         }

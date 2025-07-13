@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using codetheory.BL.DTOs;
 using codetheory.BL.Services.Interfaces;
-using codetheory.DAL.Repositories.Impl;
 using codetheory.DAL.Repositories.Interfaces;
 
 namespace codetheory.BL.Services.Impl

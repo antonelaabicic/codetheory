@@ -10,9 +10,9 @@ namespace codetheory.BL.Services.Impl
     {
         private readonly IUserAnswerRepository _repository;
         private readonly IMapper _mapper;
-        public UserAnswerService(IUserAnswerRepository repository, IMapper mapper)
+        public UserAnswerService(IRepositoryFactory repositoryFactory, IMapper mapper)
         {
-            _repository = repository;
+            _repository = repositoryFactory.GetRepository<IUserAnswerRepository>();
             _mapper = mapper;
         }
         public IEnumerable<UserAnswerDto> GetByUser(int userId)

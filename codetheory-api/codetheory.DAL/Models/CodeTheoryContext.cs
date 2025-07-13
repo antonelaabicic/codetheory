@@ -196,9 +196,6 @@ public partial class CodeTheoryContext : DbContext
 
             entity.Property(e => e.UserId).HasColumnName("user_id");
             entity.Property(e => e.LessonId).HasColumnName("lesson_id");
-            entity.Property(e => e.CompletedAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("completed_at");
             entity.Property(e => e.IsCompleted)
                 .HasDefaultValue(false)
                 .HasColumnName("is_completed");

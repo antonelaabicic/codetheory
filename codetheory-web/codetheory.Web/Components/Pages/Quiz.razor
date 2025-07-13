@@ -25,7 +25,7 @@ else
 
                     @if (json.RootElement.TryGetProperty("code", out var codeElement))
                     {
-                        <pre><code>@codeElement.GetString()</code></pre>
+                        <CodeBlock Code="@codeElement.GetString()" Language="CodeLanguage.Python" />
                     }
 
                     @if (json.RootElement.TryGetProperty("image_path", out var imgElement))
@@ -61,6 +61,15 @@ else
                 Submit Quiz
             </button>
         </div>
+
+        @if (progress != null)
+        {
+            <div class="mt-4 text-center">
+                <div class="alert @(progress.Score >= 50 ? "alert-success" : "alert-danger") d-inline-block text-center" role="alert">
+                    Your score: <strong>@progress.Score%</strong>
+                </div>
+            </div>
+        }
     </EditForm>
 }
 
@@ -87,6 +96,8 @@ else
     private List<UserAnswerDto>? previousAnswers;
     private int userId;
     private bool _initialized = false;
+
+    private UserProgressDto? progress;
 
     private bool IsSubmitDisabled =>
         answerSelections == null || answerSelections.Any(a => !a.SelectedAnswerId.HasValue);
@@ -128,6 +139,17 @@ else
                     SelectedAnswerId = selected?.AnswerId
                 };
             }).ToList();
+
+            var response = await client.GetAsync($"api/useranswer/user/{userId}/lesson/{LessonId}/progress");
+
+            if (response.IsSuccessStatusCode)
+            {
+                progress = await response.Content.ReadFromJsonAsync<UserProgressDto>();
+            }
+            else 
+            {
+                progress = null;
+            }
 
             StateHasChanged();
         }
@@ -172,11 +194,13 @@ else
 
         if (previousAnswers != null && previousAnswers.Any())
         {
-            await client.PutAsJsonAsync("api/useranswer", payload);
+            await client.PutAsJsonAsync($"api/useranswer/user/{userId}/lesson/{LessonId}", payload);
+            progress = await client.GetFromJsonAsync<UserProgressDto>($"api/useranswer/user/{userId}/lesson/{LessonId}/progress");
         }
         else
         {
-            await client.PostAsJsonAsync("api/useranswer", payload);
+            await client.PostAsJsonAsync($"api/useranswer/user/{userId}/lesson/{LessonId}", payload);
+            progress = await client.GetFromJsonAsync<UserProgressDto>($"api/useranswer/user/{userId}/lesson/{LessonId}");
         }
 
         Console.WriteLine("Answers submitted.");
