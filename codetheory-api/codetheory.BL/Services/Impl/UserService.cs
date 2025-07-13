@@ -144,5 +144,27 @@ namespace codetheory.BL.Services.Impl
 
             return _mapper.Map<UserDto>(user);
         }
+
+        public IEnumerable<StudentWithProgressDto> GetStudentsWithProgress()
+        {
+            var students = _userRepository.GetStudentsWithProgress();
+            foreach (var student in students)
+            {
+                DecryptSensitiveFields(student);
+            }
+
+            return _mapper.Map<IEnumerable<StudentWithProgressDto>>(students);
+        }
+
+        public IEnumerable<StudentWithProgressDto> SearchStudentsWithProgress(string term)
+        {
+            term = term.ToLower();
+            var students = GetStudentsWithProgress();
+
+            var filtered = students.Where(s => s.FirstName.ToLower().Contains(term) ||
+                s.LastName.ToLower().Contains(term));
+
+            return _mapper.Map<IEnumerable<StudentWithProgressDto>>(filtered);
+        }
     }
 }

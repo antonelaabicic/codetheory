@@ -116,5 +116,21 @@ namespace codetheory.Api.Controllers
                 return NotFound(ex.Message);
             }
         }
+
+        [HttpGet("students/progress")]
+        [Authorize(Roles = "teacher")]
+        public ActionResult<IEnumerable<StudentWithProgressDto>> GetStudentsWithProgress()
+        {
+            var result = _userService.GetStudentsWithProgress();
+            return Ok(result);
+        }
+
+        [HttpGet("students/progress/search")]
+        [Authorize(Roles = "teacher")]
+        public ActionResult<IEnumerable<StudentWithProgressDto>> SearchStudentsWithProgress([FromQuery] string term)
+        {
+            var result = _userService.SearchStudentsWithProgress(term);
+            return Ok(result);
+        }
     }
 }

@@ -19,6 +19,9 @@ namespace codetheory.BL.Mapping
             CreateMap<User, CreateUserDto>().ReverseMap();
             CreateMap<UserAnswer, UserAnswerDto>().ReverseMap();
             CreateMap<UserProgress, UserProgressDto>().ReverseMap();
+
+            CreateMap<User, StudentWithProgressDto>()
+                .ForMember(dest => dest.Progress, opt => opt.MapFrom(src => src.UserProgresses));
         }
     }
 }

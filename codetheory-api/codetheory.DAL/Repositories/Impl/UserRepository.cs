@@ -59,5 +59,13 @@ namespace codetheory.DAL.Repositories.Impl
         {
             _context.Users.Update(entity);
         }
+
+        public IEnumerable<User> GetStudentsWithProgress()
+        {
+            return _context.Users
+                .Include(u => u.UserProgresses)
+                .Where(u => u.RoleId == 3) 
+                .ToList();
+        }
     }
 }

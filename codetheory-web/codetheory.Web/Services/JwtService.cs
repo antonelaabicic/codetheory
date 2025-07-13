@@ -11,12 +11,15 @@ namespace codetheory.Web.Services
         {
             _js = js;
         }
-        public async Task<string?> GetUsernameAsync()
+        public async Task<string?> GetUsernameAsync() => await GetProperty("unique_name");
+        public async Task<string?> GetRoleAsync() => await GetProperty("role");
+
+        public async Task<string?> GetProperty(string property)
         {
             var token = await _js.InvokeAsync<string>("sessionStorage.getItem", "jwt");
             if (string.IsNullOrWhiteSpace(token))
             {
-                throw new InvalidOperationException("JWT token not found in session storage.");
+                return null;
             }
 
             var payload = token.Split('.')[1];
@@ -24,9 +27,8 @@ namespace codetheory.Web.Services
                 Encoding.UTF8.GetString(Convert.FromBase64String(PadBase64(payload)))
             );
 
-            return json.TryGetProperty("unique_name", out var u) ? u.GetString() : null;
+            return json.TryGetProperty(property, out var role) ? role.GetString() : null;
         }
-
         private string PadBase64(string input)
         {
             return input.PadRight(input.Length + (4 - input.Length % 4) % 4, '=');

@@ -7,5 +7,6 @@ namespace codetheory.DAL.Repositories.Interfaces
     {
         IEnumerable<User> GetUsersByRoleId(int roleId);
         User? GetByUsername(string username);
+        IEnumerable<User> GetStudentsWithProgress();
     }
 }

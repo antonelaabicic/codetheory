@@ -22,35 +22,37 @@ else
         <p class="mb-1"><strong>Email:</strong> @user.Email</p>
         <p class="mb-4"><strong>Role:</strong> @GetRoleName(user.RoleId)</p>
 
-        <table class="table table-bordered text-center w-75 mt-4">
-            <thead class="table-light">
-                <tr>
-                    <th>Lesson</th>
-                    <th>Score</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var lessonId in Enumerable.Range(1, 5))
-                {
-                    var prog = progress.FirstOrDefault(p => p.LessonId == lessonId);
+        @if (user.RoleId == 3) { 
+            <table class="table table-bordered text-center w-75 mt-4">
+                <thead class="table-light">
                     <tr>
-                        <td>Lesson @lessonId</td>
-                        <td>
-                            @if (prog != null)
-                            {
-                                <span class="fw-bold" style="color:@(prog.Score >= 50 ? "green" : "red")">
-                                    @prog.Score.ToString("0.##")%
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="text-muted">Not attempted</span>
-                            }
-                        </td>
+                        <th>Lesson</th>
+                        <th>Score</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var lessonId in Enumerable.Range(1, 5))
+                    {
+                        var prog = progress.FirstOrDefault(p => p.LessonId == lessonId);
+                        <tr>
+                            <td>Lesson @lessonId</td>
+                            <td>
+                                @if (prog != null)
+                                {
+                                    <span class="fw-bold" style="color:@(prog.Score >= 50 ? "green" : "red")">
+                                        @prog.Score.ToString("0.##")%
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Not attempted</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
     </div>
 }
 

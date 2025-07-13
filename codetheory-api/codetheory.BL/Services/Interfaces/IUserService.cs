@@ -12,5 +12,7 @@ namespace codetheory.BL.Services.Interfaces
         void UpdateUser(int id, UserDto userDto);
         void DeleteUser(int id);
         UserDto? GetUserByUsername(string username);
+        IEnumerable<StudentWithProgressDto> GetStudentsWithProgress();
+        IEnumerable<StudentWithProgressDto> SearchStudentsWithProgress(string term);
     }
 }
