@@ -1,4 +1,5 @@
-﻿using codetheory.BL.DTOs;
+﻿using AutoMapper;
+using codetheory.BL.DTOs;
 using codetheory.BL.Services.Interfaces;
 using codetheory.DAL.Models;
 using codetheory.DAL.Repositories.Interfaces;
@@ -9,10 +10,12 @@ namespace codetheory.BL.Services.Impl
     {
         private readonly IUserProgressRepository _progressRepository;
         private readonly IUserAnswerRepository _userAnswerRepository;
-        public UserProgressService(IRepositoryFactory repositoryFactory)
+        private readonly IMapper _mapper;
+        public UserProgressService(IRepositoryFactory repositoryFactory, IMapper mapper)
         {
             _progressRepository = repositoryFactory.GetRepository<IUserProgressRepository>();
             _userAnswerRepository = repositoryFactory.GetRepository<IUserAnswerRepository>();
+            _mapper = mapper;
         }
         public void EvaluateAndSaveProgress(int userId, int lessonId)
         {
@@ -43,18 +46,16 @@ namespace codetheory.BL.Services.Impl
             Console.WriteLine($"Progress evaluated: Score = {score}, Completed = {isCompleted}");
         }
 
+        public IEnumerable<UserProgressDto> GetProgressPerUser(int userId)
+        {
+            var progressList = _progressRepository.GetByUser(userId);
+            return _mapper.Map<IEnumerable<UserProgressDto>>(progressList);
+        }
+
         public UserProgressDto? GetProgress(int userId, int lessonId)
         {
             var progress = _progressRepository.Get(userId, lessonId);
-            if (progress == null) return null;
-
-            return new UserProgressDto
-            {
-                UserId = progress.UserId,
-                LessonId = progress.LessonId,
-                Score = progress.Score ?? 0,
-                IsCompleted = progress.IsCompleted ?? false
-            };
+            return progress == null ? null : _mapper.Map<UserProgressDto>(progress);
         }
     }
 }

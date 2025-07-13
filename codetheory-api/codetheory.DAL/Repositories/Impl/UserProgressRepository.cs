@@ -15,6 +15,11 @@ namespace codetheory.DAL.Repositories.Impl
             return _context.UserProgresses.FirstOrDefault(up => up.UserId == userId && up.LessonId == lessonId);
         }
 
+        public IEnumerable<UserProgress> GetByUser(int userId)
+        {
+            return _context.UserProgresses.Where(p => p.UserId == userId).ToList();
+        }
+
         public void Save()
         {
             _context.SaveChanges();

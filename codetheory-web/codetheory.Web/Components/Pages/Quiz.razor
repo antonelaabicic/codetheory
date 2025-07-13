@@ -200,7 +200,7 @@ else
         else
         {
             await client.PostAsJsonAsync($"api/useranswer/user/{userId}/lesson/{LessonId}", payload);
-            progress = await client.GetFromJsonAsync<UserProgressDto>($"api/useranswer/user/{userId}/lesson/{LessonId}");
+            progress = await client.GetFromJsonAsync<UserProgressDto>($"api/useranswer/user/{userId}/lesson/{LessonId}/progress");
         }
 
         Console.WriteLine("Answers submitted.");

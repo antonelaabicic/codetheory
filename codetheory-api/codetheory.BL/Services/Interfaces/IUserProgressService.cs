@@ -6,5 +6,6 @@ namespace codetheory.BL.Services.Interfaces
     {
         void EvaluateAndSaveProgress(int userId, int lessonId);
         UserProgressDto? GetProgress(int userId, int lessonId);
+        IEnumerable<UserProgressDto> GetProgressPerUser(int userId);
     }
 }

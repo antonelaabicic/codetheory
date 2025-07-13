@@ -1,12 +1,13 @@
 ﻿using codetheory.BL.DTOs;
 using codetheory.BL.Services.Interfaces;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace codetheory.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class UserAnswerController : ControllerBase
     {
         private readonly IUserAnswerService _userAnswerService;
@@ -74,9 +75,18 @@ namespace codetheory.Api.Controllers
         public ActionResult<UserProgressDto> GetProgress(int userId, int lessonId)
         {
             var progress = _userProgressService.GetProgress(userId, lessonId);
-            if (progress == null) return NotFound();
+            if (progress == null)
+            {
+                return NotFound();
+            }
             return Ok(progress);
         }
 
+        [HttpGet("user/{userId}/progress")]
+        public ActionResult<IEnumerable<UserProgressDto>> GetProgressForUser(int userId)
+        {
+            var result = _userProgressService.GetProgressPerUser(userId);
+            return Ok(result);
+        }
     }
 }

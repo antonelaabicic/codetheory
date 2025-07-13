@@ -20,12 +20,43 @@ else
         <h4>@user.FirstName @user.LastName</h4>
         <p class="mb-1"><strong>Username:</strong> @user.Username</p>
         <p class="mb-1"><strong>Email:</strong> @user.Email</p>
-        <p class="mb-0"><strong>Role:</strong> @GetRoleName(user.RoleId)</p>
+        <p class="mb-4"><strong>Role:</strong> @GetRoleName(user.RoleId)</p>
+
+        <table class="table table-bordered text-center w-75 mt-4">
+            <thead class="table-light">
+                <tr>
+                    <th>Lesson</th>
+                    <th>Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var lessonId in Enumerable.Range(1, 5))
+                {
+                    var prog = progress.FirstOrDefault(p => p.LessonId == lessonId);
+                    <tr>
+                        <td>Lesson @lessonId</td>
+                        <td>
+                            @if (prog != null)
+                            {
+                                <span class="fw-bold" style="color:@(prog.Score >= 50 ? "green" : "red")">
+                                    @prog.Score.ToString("0.##")%
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Not attempted</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
 }
 
 @code {
     private UserDto? user;
+    private List<UserProgressDto> progress = new();
     private bool _hasLoaded = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -50,7 +81,13 @@ else
                     var username = usernameProp.GetString();
                     var client = await AuthorizedClient.GetClientAsync();
                     user = await client.GetFromJsonAsync<UserDto>($"api/User/by-username/{username}");
-                    StateHasChanged(); 
+
+                    if (user != null)
+                    {
+                        progress = await client.GetFromJsonAsync<List<UserProgressDto>>($"api/useranswer/user/{user.Id}/progress");
+                    }
+
+                    StateHasChanged();
                 }
             }
         }
@@ -60,7 +97,8 @@ else
         }
     }
 
-    private string PadBase64(string input) {
+    private string PadBase64(string input)
+    {
         return input.PadRight(input.Length + (4 - input.Length % 4) % 4, '=');
     }
 
@@ -72,4 +110,3 @@ else
         _ => "Unknown"
     };
 }
-
