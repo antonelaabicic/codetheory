@@ -69,7 +69,7 @@ else
         initialized = true;
 
         role = await JwtService.GetRoleAsync();
-        if (role != "teacher")
+        if (role == "student")
         {
             StateHasChanged();
             return;

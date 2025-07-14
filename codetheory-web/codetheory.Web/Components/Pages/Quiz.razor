@@ -25,7 +25,7 @@ else
 
                     @if (json.RootElement.TryGetProperty("code", out var codeElement))
                     {
-                        <CodeBlock Code="@codeElement.GetString()" Language="CodeLanguage.Python" />
+                        <CodeBlock Code="@codeElement.GetString()" Language="CodeLanguage.Python"/>
                     }
 
                     @if (json.RootElement.TryGetProperty("image_path", out var imgElement))
@@ -34,6 +34,8 @@ else
                             <img src="@imgElement.GetString()" class="img-fluid rounded" style="max-height: 400px;" />
                         </div>
                     }
+
+                    <div class="mb-4"></div>
 
                     @foreach (var a in q.Answers)
                     {

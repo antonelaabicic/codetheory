@@ -118,7 +118,7 @@ namespace codetheory.Api.Controllers
         }
 
         [HttpGet("students/progress")]
-        [Authorize(Roles = "teacher")]
+        [Authorize(Roles = "teacher, admin")]
         public ActionResult<IEnumerable<StudentWithProgressDto>> GetStudentsWithProgress()
         {
             var result = _userService.GetStudentsWithProgress();
@@ -126,7 +126,7 @@ namespace codetheory.Api.Controllers
         }
 
         [HttpGet("students/progress/search")]
-        [Authorize(Roles = "teacher")]
+        [Authorize(Roles = "teacher, admin")]
         public ActionResult<IEnumerable<StudentWithProgressDto>> SearchStudentsWithProgress([FromQuery] string term)
         {
             var result = _userService.SearchStudentsWithProgress(term);

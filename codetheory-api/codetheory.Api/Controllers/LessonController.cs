@@ -8,7 +8,7 @@ namespace codetheory.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "student")]
+    [Authorize(Roles = "student, admin")]
     public class LessonController : ControllerBase
     {
         private readonly ILessonService _lessonService;
