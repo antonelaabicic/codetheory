@@ -11,7 +11,7 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 builder.Services.AddHttpClient("Api", client =>
 {
-    client.BaseAddress = new Uri("http://localhost:5111");
+    client.BaseAddress = new Uri("https://codetheory-api.onrender.com/");
 });
 
 builder.Services.AddSingleton<AuthStateService>();
