@@ -63,6 +63,17 @@ builder.Services.AddSwaggerGen(option =>
         });
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", builder =>
+    {
+        builder
+            .WithOrigins("https://codetheory-web.onrender.com") 
+            .AllowAnyHeader()
+            .AllowAnyMethod(); 
+    });
+});
+
 var app = builder.Build();
 
 #if !DEBUG
@@ -72,6 +83,7 @@ app.Urls.Add("http://+:8080");
 app.UseSwagger();
 app.UseSwaggerUI();
 
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
