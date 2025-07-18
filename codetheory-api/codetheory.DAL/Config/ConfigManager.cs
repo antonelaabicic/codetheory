@@ -8,6 +8,7 @@ namespace codetheory.DAL.Config
 
         private static void EnsureEnvLoaded()
         {
+#if DEBUG
             if (_loaded) return;
 
             var envPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "codetheory.DAL", "Resources", ".env"));
@@ -16,15 +17,24 @@ namespace codetheory.DAL.Config
 
             Env.Load(envPath);
             _loaded = true;
+#endif
         }
 
         private static string GetRequiredEnv(string key, int? requiredLength = null)
         {
             EnsureEnvLoaded();
-            var value = Env.GetString(key);
+            var value = Environment.GetEnvironmentVariable(key);
 
-            if (string.IsNullOrWhiteSpace(value)) { 
-                throw new InvalidOperationException($"{key} not found in .env file.");
+#if DEBUG
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                value = Env.GetString(key);
+            }
+#endif
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                throw new InvalidOperationException($"{key} not found in environment.");
             }
 
             if (requiredLength.HasValue && value.Length != requiredLength.Value)
