@@ -72,15 +72,17 @@ class LoginActivity : AppCompatActivity() {
                     val token = resp.body()
                     if (token != null) {
                         TokenManager.saveToken(this@LoginActivity, token.token)
-                        goToMain()
-                    } else {
-                        showError()
+                        val role = TokenManager.getRole(this@LoginActivity)
+                        if (role == "student") {
+                            goToMain()
+                        } else {
+                            TokenManager.clearToken(this@LoginActivity)
+                            showRoleError()
+                        }
                     }
                 } else {
                     showError()
                 }
-            }.onFailure {
-                showError()
             }
         }
     }
@@ -91,6 +93,11 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun showError() {
+        errorText.visibility = View.VISIBLE
+    }
+
+    private fun showRoleError() {
+        errorText.text = getString(R.string.only_students_allowed)
         errorText.visibility = View.VISIBLE
     }
 }

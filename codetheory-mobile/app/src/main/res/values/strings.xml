@@ -10,4 +10,6 @@
 
 
     <string name="action_sign_in_short">Sign In</string>
+    <string name="title_account">Account</string>
+    <string name="only_students_allowed">Your account does not have access to this application.</string>
 </resources>

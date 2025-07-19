@@ -1,4 +1,4 @@
-package hr.algebra.codetheory.ui.profile
+package hr.algebra.codetheory.ui.account
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,11 +7,11 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import hr.algebra.codetheory.databinding.FragmentProfileBinding
+import hr.algebra.codetheory.databinding.FragmentAccountBinding
 
-class ProfileFragment : Fragment() {
+class AccountFragment : Fragment() {
 
-    private var _binding: FragmentProfileBinding? = null
+    private var _binding: FragmentAccountBinding? = null
 
     private val binding get() = _binding!!
 
@@ -20,14 +20,14 @@ class ProfileFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val profileViewModel =
-            ViewModelProvider(this).get(ProfileViewModel::class.java)
+        val accountViewModel =
+            ViewModelProvider(this).get(AccountViewModel::class.java)
 
-        _binding = FragmentProfileBinding.inflate(inflater, container, false)
+        _binding = FragmentAccountBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
         val textView: TextView = binding.textNotifications
-        profileViewModel.text.observe(viewLifecycleOwner) {
+        accountViewModel.text.observe(viewLifecycleOwner) {
             textView.text = it
         }
         return root

@@ -7,7 +7,7 @@
         android:title="@string/title_learn" />
 
     <item
-        android:id="@+id/navigation_profile"
+        android:id="@+id/navigation_account"
         android:icon="@drawable/outline_account_circle_24"
         android:title="@string/title_profile" />
 
