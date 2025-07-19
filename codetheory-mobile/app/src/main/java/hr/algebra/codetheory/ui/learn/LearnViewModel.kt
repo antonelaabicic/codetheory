@@ -1,17 +1,15 @@
 package hr.algebra.codetheory.ui.learn
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
+import hr.algebra.codetheory.api.ApiClient
+import hr.algebra.codetheory.api.LessonApi
 import hr.algebra.codetheory.model.LessonDto
-import hr.algebra.codetheory.repository.LessonRepository
 import kotlinx.coroutines.launch
 
 class LearnViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = LessonRepository(application.applicationContext)
+    private val lessonApi = ApiClient.getApi(LessonApi::class.java, application.applicationContext)
 
     private val _lessons = MutableLiveData<List<LessonDto>>()
     val lessons: LiveData<List<LessonDto>> = _lessons
@@ -24,6 +22,13 @@ class LearnViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun fetchLessons() {
-
+        viewModelScope.launch {
+            try {
+                val response = lessonApi.getAllLessons()
+                _lessons.value = response
+            } catch (e: Exception) {
+                _error.value = e.message
+            }
+        }
     }
 }

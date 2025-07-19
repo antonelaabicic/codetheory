@@ -5,5 +5,4 @@ data class LessonDto(
     val title: String,
     val summary: String?,
     val lessonOrder: Int?,
-    val contents: List<LessonContentDto> = emptyList()
 )
