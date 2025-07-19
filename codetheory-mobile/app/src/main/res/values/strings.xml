@@ -8,8 +8,23 @@
     <string name="prompt_username">Username</string>
     <string name="welcome_to_codetheory">Welcome to CodeTheory</string>
 
-
     <string name="action_sign_in_short">Sign In</string>
     <string name="title_account">Account</string>
     <string name="only_students_allowed">Your account does not have access to this application.</string>
+    <string name="loading">Loading…</string>
+    <string name="progress">Progress:</string>
+    <string name="logout">Logout</string>
+
+    <string name="profile_image">Profile image</string>
+    <string name="profile_username">Username: %1$s</string>
+    <string name="profile_email">Email: %1$s</string>
+    <string name="profile_name">Name: %1$s %2$s</string>
+    <string name="lesson_not_started">Not Started</string>
+    <string name="lesson_completed">Completed (%1$.0f%%)</string>
+    <string name="lesson_in_progress">In Progress (%1$.0f%%)</string>
+    <string name="error_loading_profile">Error loading profile</string>
+    <string name="error_loading_progress">Error loading progress</string>
+    <string name="lesson_title">Lesson %1$d</string>
+    <string name="status">Status</string>
+    <string name="lesson">Lesson</string>
 </resources>

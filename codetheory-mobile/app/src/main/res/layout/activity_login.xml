@@ -25,7 +25,7 @@
         android:layout_height="wrap_content"
         android:hint="@string/prompt_username"
         android:inputType="text"
-        android:padding="12dp"
+        android:padding="@dimen/_12dp"
         android:backgroundTint="@color/blue_underline"
         android:textColor="@color/grey2"
         android:textColorHint="@color/grey3"
@@ -37,7 +37,7 @@
         android:layout_height="wrap_content"
         android:hint="@string/prompt_password"
         android:inputType="textPassword"
-        android:padding="12dp"
+        android:padding="@dimen/_12dp"
         android:backgroundTint="@color/blue_underline"
         android:textColor="@color/grey2"
         android:textColorHint="@color/grey3"
@@ -57,11 +57,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/action_sign_in"
-        android:textSize="20sp"
+        android:textSize="@dimen/_20sp"
         android:letterSpacing="0.1"
+        android:textAllCaps="false"
         android:textColor="@color/white"
         android:backgroundTint="@color/bootstrap_green"
-        android:textAllCaps="false"
         android:padding="12dp" />
 
 </LinearLayout>
