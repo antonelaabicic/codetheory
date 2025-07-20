@@ -9,11 +9,21 @@
         android:id="@+id/navigation_learn"
         android:name="hr.algebra.codetheory.ui.learn.LearnFragment"
         android:label="@string/title_learn"
-        tools:layout="@layout/fragment_learn" />
+        tools:layout="@layout/fragment_learn">
+
+        <action
+            android:id="@+id/action_navigation_learn_to_lessonDetailFragment"
+            app:destination="@id/lessonDetailFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_account"
         android:name="hr.algebra.codetheory.ui.account.AccountFragment"
         android:label="@string/title_account"
         tools:layout="@layout/fragment_account" />
+
+    <fragment
+        android:id="@+id/lessonDetailFragment"
+        android:name="hr.algebra.codetheory.ui.learn.LessonDetailFragment"
+        tools:layout="@layout/fragment_lesson_detail" />
 </navigation>

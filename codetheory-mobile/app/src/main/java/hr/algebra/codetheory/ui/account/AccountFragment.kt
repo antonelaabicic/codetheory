@@ -128,10 +128,11 @@ class AccountFragment : Fragment() {
 
                 val score = progress?.score ?: 0f
                 setTextColor(
-                    if (progress != null && score < 50f)
-                        requireContext().getColor(R.color.red)
-                    else
-                        requireContext().getColor(R.color.bootstrap_green)
+                    when {
+                        progress == null -> requireContext().getColor(R.color.purple_700)
+                        score < 50f -> requireContext().getColor(R.color.red)
+                        else -> requireContext().getColor(R.color.bootstrap_green)
+                    }
                 )
                 textSize = 16.5f
                 gravity = Gravity.CENTER

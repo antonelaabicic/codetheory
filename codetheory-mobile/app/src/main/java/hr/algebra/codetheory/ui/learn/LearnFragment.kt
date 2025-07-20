@@ -5,7 +5,9 @@ import android.view.*
 import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import hr.algebra.codetheory.R
 import hr.algebra.codetheory.databinding.FragmentLearnBinding
 import hr.algebra.codetheory.model.LessonDto
 import hr.algebra.codetheory.ui.learn.adapter.LessonAdapter
@@ -27,7 +29,16 @@ class LearnFragment : Fragment() {
 
         viewModel.lessons.observe(viewLifecycleOwner) { lessons ->
             binding.recyclerView.adapter = LessonAdapter(lessons) { lesson ->
-                Log.d("LESSON_CLICKED", "Lesson ID: ${lesson.id}")
+                val bundle = Bundle().apply {
+                    putInt("lessonId", lesson.id)
+                }
+                val fragment = LessonDetailFragment()
+                fragment.arguments = bundle
+
+                findNavController().navigate(
+                    R.id.action_navigation_learn_to_lessonDetailFragment,
+                    bundle
+                )
             }
         }
 
