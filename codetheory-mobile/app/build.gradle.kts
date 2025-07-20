@@ -65,4 +65,6 @@ dependencies {
 
     // animation
     implementation (libs.lottie)
+
+    // code snippet display
 }

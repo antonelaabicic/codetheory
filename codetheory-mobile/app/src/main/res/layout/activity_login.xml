@@ -62,6 +62,6 @@
         android:textAllCaps="false"
         android:textColor="@color/white"
         android:backgroundTint="@color/bootstrap_green"
-        android:padding="12dp" />
+        android:padding="@dimen/_12dp" />
 
 </LinearLayout>

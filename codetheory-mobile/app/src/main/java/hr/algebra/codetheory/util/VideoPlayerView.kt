@@ -19,9 +19,14 @@ class VideoPlayerView(context: Context) : LinearLayout(context) {
         addView(videoView)
     }
 
-    fun setVideoUrl(url: String) {
+    fun setVideoUrl(url: String, autoplay: Boolean = true) {
         videoView.setVideoURI(url.toUri())
+        videoView.setOnPreparedListener { mp ->
+            mp.setVolume(1f, 1f)
+            if (autoplay) {
+                videoView.start()
+            }
+        }
         videoView.requestFocus()
-        videoView.start()
     }
 }
