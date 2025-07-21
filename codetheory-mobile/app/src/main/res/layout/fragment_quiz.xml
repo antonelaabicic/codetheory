@@ -27,6 +27,7 @@
         android:textSize="@dimen/_20sp"
         android:letterSpacing="0.1"
         android:textAllCaps="false"
+        android:enabled="false"
         android:textColor="@android:color/white"
         android:backgroundTint="@color/bootstrap_green"
         android:padding="@dimen/_12dp"

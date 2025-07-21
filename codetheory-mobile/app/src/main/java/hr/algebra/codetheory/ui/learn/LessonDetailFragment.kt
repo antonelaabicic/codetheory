@@ -100,7 +100,9 @@ class LessonDetailFragment : Fragment() {
 
         val text = gson.fromJson(json, TextContentDataDto::class.java)
         text.title?.let { container.addView(makeTextView(it, true)) }
-        text.text.let { container.addView(makeTextView(it.replace("\\n", "\n"), false)) }
+        text.text?.replace("\\n", "\n")?.let {
+            container.addView(makeTextView(it, false))
+        }
         text.bullets?.forEach { bullet ->
             container.addView(makeTextView("• ${bullet.heading}", true))
             container.addView(makeTextView(bullet.text, false))
