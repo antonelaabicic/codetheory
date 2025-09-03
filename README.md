@@ -30,15 +30,15 @@ The web app supports all three user roles, the mobile app is focused exclusively
 
 ### **Web Application**
 ![Blazor](https://img.shields.io/badge/blazor-%235C2D91.svg?style=for-the-badge&logo=blazor&logoColor=white)
-![Bootstrap](https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white)
 ![MudBlazor](https://img.shields.io/badge/MudBlazor-2C3E50?style=for-the-badge)
 ![Konva.js](https://img.shields.io/badge/Konva.js-005F0F?style=for-the-badge)
 ![Brism](https://img.shields.io/badge/Brism-4A90E2?style=for-the-badge)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white)
 
 ### **Mobile Application**  
-![Kotlin](https://img.shields.io/badge/Kotlin-%230095D5.svg?style=for-the-badge&logo=kotlin&logoColor=white)
+![Kotlin](https://img.shields.io/badge/Kotlin-%230095D5.svg?style=for-the-badge&logo=kotlin&logoColor=white)  
 ![Retrofit](https://img.shields.io/badge/Retrofit-Networking-blue?style=for-the-badge)
 ![Gson](https://img.shields.io/badge/Gson-JSON%20Parsing-green?style=for-the-badge)
-![Jsoup](https://img.shields.io/badge/Jsoup-Web%20Scraping-blue?style=for-the-badge)
+![Jsoup](https://img.shields.io/badge/Jsoup-Web%20Scraping-FF9800?style=for-the-badge)
 ![Picasso](https://img.shields.io/badge/Picasso-Image%20Loader-pink?style=for-the-badge)
 ![Lottie](https://img.shields.io/badge/Lottie-Animations-orange?style=for-the-badge)
