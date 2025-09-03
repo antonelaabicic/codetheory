@@ -1,5 +1,5 @@
 <p align="center">
-    This project is an educational platform which consists of a web app and a mobile app. Both consume data from the [API](https://codetheory-api.onrender.com/swagger/index.html), which provides data about lessons, quizzes and platform users.
+    This project is an educational platform which consists of a web app and a mobile app. Both consume data from the <a href="https://codetheory-api.onrender.com/swagger/index.html">API</a>, which provides data about lessons, quizzes and platform users.
 </p>
 
 ## 📌 About The Project  
