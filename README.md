@@ -1,5 +1,5 @@
 <p align="center">
-    This project is an educational platform which consists of a web app and a mobile app. Both consume data from the [API](<[https://vrijeme.hr/hrvatska_n.xml](https://codetheory-api.onrender.com/swagger/index.html)>), which provides data about lessons, quizzes and platform users.
+    This project is an educational platform which consists of a web app and a mobile app. Both consume data from the [API](https://codetheory-api.onrender.com/swagger/index.html), which provides data about lessons, quizzes and platform users.
 </p>
 
 ## 📌 About The Project  
